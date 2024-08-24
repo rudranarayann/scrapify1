@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Delivery Route Optimizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h2 {
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            background-color: #4CAF50;
+            color: white;
+        }
+        #map {
+            height: 500px;
+            width: 100%;
+            border: 2px solid #ddd;
+        }
+        #controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #fff;
+            border-top: 2px solid #ddd;
+        }
+        #controls input, #controls button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px 0;
+            border-radius: 5px;
+            width: 250px;
+        }
+        #controls button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #controls button:hover {
+            background-color: #45a049;
+        }
+        #routeInfo {
+            padding: 20px;
+            background-color: #fff;
+            border-top: 2px solid #ddd;
+            margin-top: -10px;
+        }
+        #routeInfo b {
+            color: hsl(122, 72%, 78%);
+        }
+    </style>
+</head>
+<body>
+    <h2>Vendor Delivery Route Optimizer</h2>
+    <div id="map"></div>
+    <div id="controls">
+        <input type="text" id="vendorId" placeholder="Enter Vendor ID">
+        <button id="useCurrentLocation">Use Current Location</button>
+        <button id="addScheduledLocations">Add Scheduled Locations</button>
+        <button id="optimizeRoute">Optimize Route</button>
+    </div>
+    <div id="routeInfo"></div>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAJajcAWWSa8lCGS34VZeFmYLCBU2Y3nbg&libraries=places&callback=initMap">
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

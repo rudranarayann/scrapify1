@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        select, input, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .vendor-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .request-form {
+            margin-top: 20px;
+        }
+        .photo-preview {
+            margin-top: 10px;
+        }
+        .photo-preview img {
+            max-width: 100px;
+            display: block;
+            margin-top: 10px;
+        }
+        .photo-preview p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Search</h1>
+        
+        <div class="form-group">
+            <label for="userLocation">Select Your Location:</label>
+            <select id="userLocation" onchange="fetchVendors()">
+                <option value="">--Select a location--</option>
+                <!-- Options will be populated by JavaScript -->
+            </select>
+        </div>
+
+        <div class="vendor-list" id="vendorList"></div>
+
+        <div class="request-form" id="requestForm" style="display: none;">
+            <h2>Send Collection Request</h2>
+            <form id="collectionRequestForm">
+                <div class="form-group">
+                    <label for="selectedVendor">Selected Vendor:</label>
+                    <input type="text" id="selectedVendor" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="scrapType">Scrap Type:</label>
+                    <select id="scrapType">
+                        <option value="plastic">Plastic</option>
+                        <option value="glass">Glass</option>
+                        <option value="metal">Metal</option>
+                        <option value="paper">Paper</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Quantity (kg):</label>
+                    <input type="number" id="quantity" min="10">
+                </div>
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="photos">Upload Photos (Max 5):</label>
+                    <input type="file" id="photos" accept="image/*" multiple onchange="previewPhotos()">
+                    <div class="photo-preview" id="photoPreview"></div>
+                </div>
+                <button type="button" onclick="sendRequest()">Send Request</button>
+            </form>
+            <div id="confirmationMessage" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const locations = {1: 'BBSR', 2: 'Cuttack', 3: 'Puri'};
+
+        function loadVendors() {
+            return JSON.parse(localStorage.getItem('vendors')) || {};
+        }
+
+        function fetchVendors() {
+            const location = document.getElementById('userLocation').value;
+            const vendorList = document.getElementById('vendorList');
+            vendorList.innerHTML = '';
+            
+            if (!location) return;
+
+            const vendors = loadVendors();
+            for (const [id, vendor] of Object.entries(vendors)) {
+                if (vendor.location == location) {
+                    const vendorItem = document.createElement('div');
+                    vendorItem.className = 'vendor-item';
+                    vendorItem.innerHTML = `
+                        <h3>${vendor.name}</h3>
+                        <p>Plastic Price: $${vendor.prices.plastic} per kg</p>
+                        <p>Glass Price: $${vendor.prices.glass} per kg</p>
+                        <p>Metal Price: $${vendor.prices.metal} per kg</p>
+                        <p>Paper Price: $${vendor.prices.paper} per kg</p>
+                        <button onclick="selectVendor('${id}')">Select Vendor</button>
+                    `;
+                    vendorList.appendChild(vendorItem);
+                }
+            }
+        }
+
+        function selectVendor(vendorId) {
+            const vendors = loadVendors();
+            const vendor = vendors[vendorId];
+            document.getElementById('selectedVendor').value = vendorId;
+            document.getElementById('requestForm').style.display = 'block';
+        }
+
+        function previewPhotos() {
+            const files = document.getElementById('photos').files;
+            const preview = document.getElementById('photoPreview');
+            preview.innerHTML = '';
+
+            if (files.length > 5) {
+                alert('You can upload a maximum of 5 photos.');
+                return;
+            }
+
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Remove file extension
+                    const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, "");
+
+                    const photoItem = document.createElement('div');
+                    photoItem.innerHTML = `
+                        <p>Photo ${index + 1}: ${fileNameWithoutExtension}</p>
+                        <img src="${e.target.result}" alt="Photo ${index + 1}">
+                    `;
+                    preview.appendChild(photoItem);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function sendRequest() {
+            const vendorId = document.getElementById('selectedVendor').value;
+            const scrapType = document.getElementById('scrapType').value;
+            const quantity = document.getElementById('quantity').value;
+            const description = document.getElementById('description').value;
+            const files = document.getElementById('photos').files;
+
+            if (!vendorId || !scrapType || quantity < 10 || !description || files.length === 0) {
+                alert('Please fill in all fields with valid information.');
+                return;
+            }
+
+            const confirmationMessage = document.getElementById('confirmationMessage');
+            confirmationMessage.innerHTML = `
+                <p>Request sent successfully!</p>
+                <p>Vendor ID: ${vendorId}</p>
+                <p>Scrap Type: ${scrapType}</p>
+                <p>Quantity: ${quantity} kg</p>
+                <p>Description: ${description}</p>
+                <p>Photos Uploaded: ${files.length}</p>
+            `;
+            confirmationMessage.style.display = 'block';
+        }
+
+        function initialize() {
+            const locationSelect = document.getElementById('userLocation');
+            for (const [id, name] of Object.entries(locations)) {
+                locationSelect.innerHTML += <option value="${id}">${name}</option>;
+            }
+        }
+
+        initialize();
+    </script>
+</body>
+</html>
